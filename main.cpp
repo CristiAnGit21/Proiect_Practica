@@ -1,10 +1,9 @@
 ﻿#include <iostream>
 #include <cstring>
 #include <iomanip>
-
 using namespace std;
 
-const int MAX_STUDENTS = 100;
+const int MAX_STUDENTS = 150;
 const int MAX_NAME_LENGTH = 50;
 const int MAX_COURSE_LENGTH = 50;
 
@@ -65,6 +64,5 @@ int main() {
             default: printCentered("Invalid choice. Please try again.", 50);
         }
     } while (choice != 9);
-
     return 0;
 }
