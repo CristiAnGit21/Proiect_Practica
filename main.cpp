@@ -1,29 +1,36 @@
 ﻿#include <iostream>
-#include <cstring>
-#include <iomanip>
-
-using namespace std;
+#include <string>
 
 const int MAX_STUDENTS = 100;
-const int MAX_NAME_LENGTH = 50;
-const int MAX_COURSE_LENGTH = 50;
 
 struct Student {
     int id;
-    char name[MAX_NAME_LENGTH];
+    std::string name;
     int age;
-    char course[MAX_COURSE_LENGTH];
+    std::string course;
 };
 
 Student students[MAX_STUDENTS];
 int studentCount = 0;
 
-void printCentered(const string &text, int width) {
+enum class MenuOption {
+    Insert = 1,
+    ViewAll = 2,
+    SearchByID = 3,
+    SearchByName = 4,
+    Delete = 5,
+    Update = 6,
+    SortByName = 7,
+    DisplayStatistics = 8,
+    Exit = 9
+};
+
+void printCentered(const std::string &text, int width) {
     int padding = (width - text.length()) / 2;
     for (int i = 0; i < padding; ++i) {
-        cout << " ";
+        std::cout << " ";
     }
-    cout << text << endl;
+    std::cout << text << std::endl;
 }
 
 void insertStudent() { printCentered("Feature in progress...", 100); }
@@ -36,8 +43,8 @@ void sortStudentsByName() { printCentered("Feature in progress...", 100); }
 void displayStatistics() { printCentered("Feature in progress...", 100); }
 
 int main() {
-    int choice;
-    do {
+    int UserChoice;
+    do{
         printCentered("-------- Student Management System Menu --------", 100);
         printCentered("1. Insert Student record", 100);
         printCentered("2. View All Student records", 100);
@@ -50,21 +57,23 @@ int main() {
         printCentered("9. Exit", 100);
         printCentered("--------------------------------------------", 100);
         printCentered("Enter your choice: ", 100);
-        cin >> choice;
 
-        switch (choice) {
-            case 1: insertStudent(); break;
-            case 2: viewAllStudents(); break;
-            case 3: searchStudentByID(); break;
-            case 4: searchStudentByName(); break;
-            case 5: deleteStudent(); break;
-            case 6: updateStudent(); break;
-            case 7: sortStudentsByName(); break;
-            case 8: displayStatistics(); break;
-            case 9: printCentered("Exiting the program.", 50); break;
-            default: printCentered("Invalid choice. Please try again.", 50);
-        }
-    } while (choice != 9);
+    std:: cin >> UserChoice;
+    MenuOption choice = static_cast<MenuOption>(UserChoice);
+
+    switch (choice) {
+        case MenuOption::Insert: insertStudent(); break;
+        case MenuOption::ViewAll: viewAllStudents(); break;
+        case MenuOption::SearchByID: searchStudentByID(); break;
+        case MenuOption::SearchByName: searchStudentByName(); break;
+        case MenuOption::Delete: deleteStudent(); break;
+        case MenuOption::Update: updateStudent(); break;
+        case MenuOption::SortByName: sortStudentsByName(); break;
+        case MenuOption::DisplayStatistics: displayStatistics(); break;
+        case MenuOption::Exit: printCentered("Exiting the program.", 50); break;
+        default: printCentered("Invalid choice. Please try again.", 50);
+    }
+} while (static_cast<MenuOption>(UserChoice) != MenuOption::Exit);
 
     return 0;
 }
