@@ -1,17 +1,9 @@
-﻿#include <iostream>
+#include <iostream>
+#include <iomanip>
+#include <limits>
 #include <string>
-
-const int MAX_STUDENTS = 100;
-
-struct Student {
-    int id;
-    std::string name;
-    int age;
-    std::string course;
-};
-
-Student students[MAX_STUDENTS];
-int studentCount = 0;
+#include "Student.h"
+#include "StudentRepository.h"
 
 enum class MenuOption {
     Insert = 1,
@@ -26,25 +18,125 @@ enum class MenuOption {
 };
 
 void printCentered(const std::string &text, int width) {
-    int padding = (width - text.length()) / 2;
-    for (int i = 0; i < padding; ++i) {
-        std::cout << " ";
-    }
-    std::cout << text << std::endl;
+    int padding = (width - static_cast<int>(text.length())) / 2;
+    if (padding < 0) padding = 0;
+    std::cout << std::string(padding, ' ') << text << std::endl;
 }
 
-void insertStudent() { printCentered("Feature in progress...", 100); }
-void viewAllStudents() { printCentered("Feature in progress...", 100); }
-void searchStudentByID() { printCentered("Feature in progress...", 100); }
-void searchStudentByName() { printCentered("Feature in progress...", 100); }
-void deleteStudent() { printCentered("Feature in progress...", 100); }
-void updateStudent() { printCentered("Feature in progress...", 100); }
-void sortStudentsByName() { printCentered("Feature in progress...", 100); }
-void displayStatistics() { printCentered("Feature in progress...", 100); }
+int readInt(const std::string &prompt) {
+    int value;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> value) {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            return value;
+        }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid number, try again.\n";
+    }
+}
+
+std::string readLine(const std::string &prompt) {
+    std::string value;
+    while (true) {
+        std::cout << prompt;
+        std::getline(std::cin, value);
+        if (!value.empty()) return value;
+        std::cout << "Value cannot be empty, try again.\n";
+    }
+}
+
+void printStudentTable(const std::vector<Student> &list) {
+    if (list.empty()) {
+        std::cout << "No students to display.\n";
+        return;
+    }
+    std::cout << std::left
+               << std::setw(6) << "ID"
+               << std::setw(25) << "Name"
+               << std::setw(6) << "Age"
+               << std::setw(20) << "Course" << "\n";
+    std::cout << std::string(57, '-') << "\n";
+    for (const auto &s : list) {
+        std::cout << std::left
+                   << std::setw(6) << s.id
+                   << std::setw(25) << s.name
+                   << std::setw(6) << s.age
+                   << std::setw(20) << s.course << "\n";
+    }
+}
+
+void insertStudent(StudentRepository &repo) {
+    std::string name = readLine("Name: ");
+    int age = readInt("Age: ");
+    std::string course = readLine("Course: ");
+
+    int id = repo.insert(name, age, course);
+    std::cout << "Student added with ID " << id << ".\n";
+}
+
+void viewAllStudents(const StudentRepository &repo) {
+    printStudentTable(repo.getAll());
+}
+
+void searchStudentByID(const StudentRepository &repo) {
+    int id = readInt("Student ID: ");
+    auto result = repo.findById(id);
+    if (!result) {
+        std::cout << "No student found with ID " << id << ".\n";
+        return;
+    }
+    printStudentTable({*result});
+}
+
+void searchStudentByName(const StudentRepository &repo) {
+    std::string query = readLine("Name (or part of it): ");
+    auto results = repo.findByName(query);
+    printStudentTable(results);
+}
+
+void deleteStudent(StudentRepository &repo) {
+    int id = readInt("Student ID to delete: ");
+    if (repo.remove(id)) {
+        std::cout << "Student " << id << " deleted.\n";
+    } else {
+        std::cout << "No student found with ID " << id << ".\n";
+    }
+}
+
+void updateStudent(StudentRepository &repo) {
+    int id = readInt("Student ID to update: ");
+    if (!repo.findById(id)) {
+        std::cout << "No student found with ID " << id << ".\n";
+        return;
+    }
+    std::string name = readLine("New name: ");
+    int age = readInt("New age: ");
+    std::string course = readLine("New course: ");
+
+    repo.update(id, name, age, course);
+    std::cout << "Student " << id << " updated.\n";
+}
+
+void sortStudentsByName(StudentRepository &repo) {
+    repo.sortByName();
+    std::cout << "Students sorted by name.\n";
+    printStudentTable(repo.getAll());
+}
+
+void displayStatistics(const StudentRepository &repo) {
+    std::cout << "Total students: " << repo.count() << "\n";
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "Average age: " << repo.averageAge() << "\n";
+}
 
 int main() {
-    int UserChoice;
-    do{
+    StudentRepository repo("students.csv");
+    repo.load();
+
+    int userChoice;
+    do {
         printCentered("-------- Student Management System Menu --------", 100);
         printCentered("1. Insert Student record", 100);
         printCentered("2. View All Student records", 100);
@@ -56,24 +148,24 @@ int main() {
         printCentered("8. Display Statistics", 100);
         printCentered("9. Exit", 100);
         printCentered("--------------------------------------------", 100);
-        printCentered("Enter your choice: ", 100);
 
-    std:: cin >> UserChoice;
-    MenuOption choice = static_cast<MenuOption>(UserChoice);
+        userChoice = readInt("Enter your choice: ");
+        MenuOption choice = static_cast<MenuOption>(userChoice);
 
-    switch (choice) {
-        case MenuOption::Insert: insertStudent(); break;
-        case MenuOption::ViewAll: viewAllStudents(); break;
-        case MenuOption::SearchByID: searchStudentByID(); break;
-        case MenuOption::SearchByName: searchStudentByName(); break;
-        case MenuOption::Delete: deleteStudent(); break;
-        case MenuOption::Update: updateStudent(); break;
-        case MenuOption::SortByName: sortStudentsByName(); break;
-        case MenuOption::DisplayStatistics: displayStatistics(); break;
-        case MenuOption::Exit: printCentered("Exiting the program.", 50); break;
-        default: printCentered("Invalid choice. Please try again.", 50);
-    }
-} while (static_cast<MenuOption>(UserChoice) != MenuOption::Exit);
+        switch (choice) {
+            case MenuOption::Insert: insertStudent(repo); break;
+            case MenuOption::ViewAll: viewAllStudents(repo); break;
+            case MenuOption::SearchByID: searchStudentByID(repo); break;
+            case MenuOption::SearchByName: searchStudentByName(repo); break;
+            case MenuOption::Delete: deleteStudent(repo); break;
+            case MenuOption::Update: updateStudent(repo); break;
+            case MenuOption::SortByName: sortStudentsByName(repo); break;
+            case MenuOption::DisplayStatistics: displayStatistics(repo); break;
+            case MenuOption::Exit: printCentered("Exiting the program.", 50); break;
+            default: printCentered("Invalid choice. Please try again.", 50);
+        }
+        std::cout << "\n";
+    } while (static_cast<MenuOption>(userChoice) != MenuOption::Exit);
 
     return 0;
 }
