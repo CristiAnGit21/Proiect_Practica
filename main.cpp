@@ -27,12 +27,14 @@ int readInt(const std::string &prompt) {
     int value;
     while (true) {
         std::cout << prompt;
-        if (std::cin >> value) {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            return value;
+        bool ok = static_cast<bool>(std::cin >> value);
+        if (std::cin.eof()) {
+            std::cerr << "\nEOF reached. Exiting.\n";
+            std::exit(0);
         }
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        if (ok) return value;
         std::cout << "Invalid number, try again.\n";
     }
 }
@@ -41,11 +43,24 @@ std::string readLine(const std::string &prompt) {
     std::string value;
     while (true) {
         std::cout << prompt;
-        std::getline(std::cin, value);
+        if (!std::getline(std::cin, value)) {
+            if (std::cin.eof()) {
+                std::cerr << "\nEOF reached. Exiting.\n";
+                std::exit(0);
+            }
+            std::cin.clear();
+            continue;
+        }
         if (!value.empty()) return value;
         std::cout << "Value cannot be empty, try again.\n";
     }
 }
+
+constexpr int COL_ID     = 6;
+constexpr int COL_NAME   = 25;
+constexpr int COL_AGE    = 6;
+constexpr int COL_COURSE = 20;
+constexpr int TABLE_WIDTH = COL_ID + COL_NAME + COL_AGE + COL_COURSE;
 
 void printStudentTable(const std::vector<Student> &list) {
     if (list.empty()) {
@@ -53,17 +68,17 @@ void printStudentTable(const std::vector<Student> &list) {
         return;
     }
     std::cout << std::left
-               << std::setw(6) << "ID"
-               << std::setw(25) << "Name"
-               << std::setw(6) << "Age"
-               << std::setw(20) << "Course" << "\n";
-    std::cout << std::string(57, '-') << "\n";
+               << std::setw(COL_ID)     << "ID"
+               << std::setw(COL_NAME)   << "Name"
+               << std::setw(COL_AGE)    << "Age"
+               << std::setw(COL_COURSE) << "Course" << "\n";
+    std::cout << std::string(TABLE_WIDTH, '-') << "\n";
     for (const auto &s : list) {
         std::cout << std::left
-                   << std::setw(6) << s.id
-                   << std::setw(25) << s.name
-                   << std::setw(6) << s.age
-                   << std::setw(20) << s.course << "\n";
+                   << std::setw(COL_ID)     << s.id
+                   << std::setw(COL_NAME)   << s.name
+                   << std::setw(COL_AGE)    << s.age
+                   << std::setw(COL_COURSE) << s.course << "\n";
     }
 }
 
@@ -135,7 +150,7 @@ int main() {
     StudentRepository repo("students.csv");
     repo.load();
 
-    int userChoice;
+    MenuOption choice = MenuOption::Insert;
     do {
         printCentered("-------- Student Management System Menu --------", 100);
         printCentered("1. Insert Student record", 100);
@@ -149,8 +164,8 @@ int main() {
         printCentered("9. Exit", 100);
         printCentered("--------------------------------------------", 100);
 
-        userChoice = readInt("Enter your choice: ");
-        MenuOption choice = static_cast<MenuOption>(userChoice);
+        int userChoice = readInt("Enter your choice: ");
+        choice = static_cast<MenuOption>(userChoice);
 
         switch (choice) {
             case MenuOption::Insert: insertStudent(repo); break;
@@ -165,7 +180,7 @@ int main() {
             default: printCentered("Invalid choice. Please try again.", 50);
         }
         std::cout << "\n";
-    } while (static_cast<MenuOption>(userChoice) != MenuOption::Exit);
+    } while (choice != MenuOption::Exit);
 
     return 0;
 }

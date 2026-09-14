@@ -30,7 +30,4 @@ private:
     int nextId = 1;
 
     int indexOfId(int id) const;
-
-    static std::string escapeCsvField(const std::string &field);
-    static std::vector<std::string> parseCsvLine(const std::string &line);
 };

@@ -8,3 +8,9 @@ add_executable(Proiect_Practica
         main.cpp
         StudentRepository.cpp
 )
+
+if(MSVC)
+    target_compile_options(Proiect_Practica PRIVATE /W4)
+else()
+    target_compile_options(Proiect_Practica PRIVATE -Wall -Wextra -Wpedantic)
+endif()

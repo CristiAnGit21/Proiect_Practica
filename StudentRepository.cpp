@@ -1,56 +1,62 @@
 #include "StudentRepository.h"
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
-StudentRepository::StudentRepository(std::string filePath) : filePath(std::move(filePath)) {}
+namespace {
+    constexpr size_t EXPECTED_CSV_FIELDS = 4;
 
-std::string StudentRepository::escapeCsvField(const std::string &field) {
-    bool needsQuotes = field.find_first_of(",\"\n") != std::string::npos;
-    if (!needsQuotes) return field;
+    std::string escapeCsvField(const std::string &field) {
+        bool needsQuotes = field.find_first_of(",\"\n") != std::string::npos;
+        if (!needsQuotes) return field;
 
-    std::string escaped = "\"";
-    for (char c : field) {
-        if (c == '"') escaped += "\"\"";
-        else escaped += c;
+        std::string escaped = "\"";
+        for (char c : field) {
+            if (c == '"') escaped += "\"\"";
+            else escaped += c;
+        }
+        escaped += "\"";
+        return escaped;
     }
-    escaped += "\"";
-    return escaped;
-}
 
-std::vector<std::string> StudentRepository::parseCsvLine(const std::string &line) {
-    std::vector<std::string> fields;
-    std::string current;
-    bool inQuotes = false;
+    std::vector<std::string> parseCsvLine(const std::string &line) {
+        std::vector<std::string> fields;
+        std::string current;
+        bool inQuotes = false;
 
-    for (size_t i = 0; i < line.size(); ++i) {
-        char c = line[i];
-        if (inQuotes) {
-            if (c == '"') {
-                if (i + 1 < line.size() && line[i + 1] == '"') {
-                    current += '"';
-                    ++i;
+        for (size_t i = 0; i < line.size(); ++i) {
+            char c = line[i];
+            if (inQuotes) {
+                if (c == '"') {
+                    if (i + 1 < line.size() && line[i + 1] == '"') {
+                        current += '"';
+                        ++i;
+                    } else {
+                        inQuotes = false;
+                    }
                 } else {
-                    inQuotes = false;
+                    current += c;
                 }
             } else {
-                current += c;
-            }
-        } else {
-            if (c == '"') {
-                inQuotes = true;
-            } else if (c == ',') {
-                fields.push_back(current);
-                current.clear();
-            } else {
-                current += c;
+                if (c == '"') {
+                    inQuotes = true;
+                } else if (c == ',') {
+                    fields.push_back(current);
+                    current.clear();
+                } else {
+                    current += c;
+                }
             }
         }
+        fields.push_back(current);
+        return fields;
     }
-    fields.push_back(current);
-    return fields;
 }
+
+StudentRepository::StudentRepository(std::string filePath) : filePath(std::move(filePath)) {}
 
 bool StudentRepository::load() {
     std::ifstream file(filePath);
@@ -67,11 +73,11 @@ bool StudentRepository::load() {
 
         if (firstLine) {
             firstLine = false;
-            if (line.rfind("id,", 0) == 0) continue;
+            if (line.find("id,") == 0) continue;
         }
 
         std::vector<std::string> fields = parseCsvLine(line);
-        if (fields.size() < 4) continue;
+        if (fields.size() < EXPECTED_CSV_FIELDS) continue;
 
         Student s;
         try {
@@ -79,7 +85,8 @@ bool StudentRepository::load() {
             s.name = fields[1];
             s.age = std::stoi(fields[2]);
             s.course = fields[3];
-        } catch (...) {
+        } catch (const std::exception &e) {
+            std::cerr << "Warning: skipping malformed CSV line: " << e.what() << "\n";
             continue;
         }
 
@@ -178,7 +185,7 @@ size_t StudentRepository::count() const {
 
 double StudentRepository::averageAge() const {
     if (students.empty()) return 0.0;
-    long sum = 0;
+    int64_t sum = 0;
     for (const auto &s : students) sum += s.age;
     return static_cast<double>(sum) / static_cast<double>(students.size());
 }
