@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(Proiect_Practica
         main.cpp
         StudentRepository.cpp
+        StudentController.cpp
+        Menu.cpp
 )
 
 if(MSVC)
