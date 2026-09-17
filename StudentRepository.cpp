@@ -54,6 +54,13 @@ namespace {
         fields.push_back(current);
         return fields;
     }
+
+    std::string toLower(const std::string &s) {
+        std::string result = s;
+        std::transform(result.begin(), result.end(), result.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }
 }
 
 StudentRepository::StudentRepository(std::string filePath) : filePath(std::move(filePath)) {}
@@ -157,25 +164,40 @@ std::optional<Student> StudentRepository::findById(int id) const {
 }
 
 std::vector<Student> StudentRepository::findByName(const std::string &query) const {
-    std::string lowerQuery = query;
-    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(),
-                    [](unsigned char c) { return std::tolower(c); });
-
+    std::string lowerQuery = toLower(query);
     std::vector<Student> results;
     for (const auto &s : students) {
-        std::string lowerName = s.name;
-        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(),
-                        [](unsigned char c) { return std::tolower(c); });
-        if (lowerName.find(lowerQuery) != std::string::npos) {
+        if (toLower(s.name).find(lowerQuery) != std::string::npos)
             results.push_back(s);
-        }
     }
     return results;
 }
 
-void StudentRepository::sortByName() {
-    std::sort(students.begin(), students.end(),
-              [](const Student &a, const Student &b) { return a.name < b.name; });
+std::vector<Student> StudentRepository::findByCourse(const std::string &query) const {
+    std::string lowerQuery = toLower(query);
+    std::vector<Student> results;
+    for (const auto &s : students) {
+        if (toLower(s.course).find(lowerQuery) != std::string::npos)
+            results.push_back(s);
+    }
+    return results;
+}
+
+void StudentRepository::sortBy(SortField field) {
+    switch (field) {
+        case SortField::Name:
+            std::sort(students.begin(), students.end(),
+                      [](const Student &a, const Student &b) { return a.name < b.name; });
+            break;
+        case SortField::Age:
+            std::sort(students.begin(), students.end(),
+                      [](const Student &a, const Student &b) { return a.age < b.age; });
+            break;
+        case SortField::Id:
+            std::sort(students.begin(), students.end(),
+                      [](const Student &a, const Student &b) { return a.id < b.id; });
+            break;
+    }
     save();
 }
 
