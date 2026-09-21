@@ -1,10 +1,9 @@
-#include "StudentRepository.h"
-#include "StudentController.h"
+#include <QApplication>
+#include "MainWindow.h"
 
-int main() {
-    StudentRepository repo("students.csv");
-    repo.load();
-    StudentController controller(repo);
-    controller.run();
-    return 0;
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    MainWindow window;
+    window.show();
+    return app.exec();
 }
