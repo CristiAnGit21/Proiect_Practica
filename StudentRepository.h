@@ -13,9 +13,12 @@ public:
     bool load();
     bool save() const;
 
-    int insert(const std::string &name, int age, const std::string &course);
+    int  insert(const std::string &name, int age, const std::string &course);
     bool update(int id, const std::string &name, int age, const std::string &course);
     bool remove(int id);
+
+    bool addGrade(int id, double grade);
+    bool removeGrade(int id, int gradeIndex);
 
     const std::vector<Student> &getAll() const;
     std::optional<Student> findById(int id) const;
@@ -26,6 +29,7 @@ public:
 
     size_t count() const;
     double averageAge() const;
+    double averageGrade() const;
 
 private:
     std::string filePath;
