@@ -4,15 +4,9 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 
-StudentDialog::StudentDialog(QWidget *parent)
-    : QDialog(parent)
-{
-    setupUi("Add Student");
-}
+StudentDialog::StudentDialog(QWidget *parent) : QDialog(parent) { setupUi("Add Student"); }
 
-StudentDialog::StudentDialog(QWidget *parent, const Student &student)
-    : QDialog(parent)
-{
+StudentDialog::StudentDialog(QWidget *parent, const Student &student) : QDialog(parent) {
     setupUi("Edit Student");
     nameEdit->setText(QString::fromStdString(student.name));
     ageSpin->setValue(student.age);
@@ -21,7 +15,7 @@ StudentDialog::StudentDialog(QWidget *parent, const Student &student)
 
 void StudentDialog::setupUi(const QString &title) {
     setWindowTitle(title);
-    setMinimumWidth(320);
+    setMinimumWidth(300);
 
     nameEdit   = new QLineEdit;
     ageSpin    = new QSpinBox;
@@ -36,9 +30,7 @@ void StudentDialog::setupUi(const QString &title) {
     form->addRow("Course:", courseEdit);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(buttons, &QDialogButtonBox::accepted, this, [this]{
-        if (validate()) accept();
-    });
+    connect(buttons, &QDialogButtonBox::accepted, this, [this]{ if (validate()) accept(); });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto *layout = new QVBoxLayout(this);
@@ -49,13 +41,11 @@ void StudentDialog::setupUi(const QString &title) {
 bool StudentDialog::validate() {
     if (nameEdit->text().trimmed().length() < 2) {
         QMessageBox::warning(this, "Validation", "Name must be at least 2 characters.");
-        nameEdit->setFocus();
-        return false;
+        nameEdit->setFocus(); return false;
     }
     if (courseEdit->text().trimmed().isEmpty()) {
         QMessageBox::warning(this, "Validation", "Course cannot be empty.");
-        courseEdit->setFocus();
-        return false;
+        courseEdit->setFocus(); return false;
     }
     return true;
 }
