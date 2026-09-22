@@ -14,10 +14,17 @@ else()
 endif()
 
 add_executable(Proiect_Practica WIN32
-        main.cpp
-        StudentRepository.cpp
-        MainWindow.cpp
-        StudentDialog.cpp
+        src/main.cpp
+        src/repository/StudentRepository.cpp
+        src/ui/MainWindow.cpp
+        src/ui/StudentDialog.cpp
+)
+
+target_include_directories(Proiect_Practica PRIVATE
+        src
+        src/model
+        src/repository
+        src/ui
 )
 
 target_link_libraries(Proiect_Practica PRIVATE ${QT_LIBS})
